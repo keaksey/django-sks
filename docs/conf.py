@@ -240,7 +240,7 @@ texinfo_documents = [
         "sks Documentation",
         """keaksey-sum""",
         "sks",
-        """sks project template for graphql """,
+        """sks project template for graphqls """,
         "Miscellaneous",
     )
 ]

@@ -61,6 +61,8 @@ DJANGO_APPS = [
     'django.contrib.staticfiles',
     # 'django.contrib.humanize', # Handy template tags
     'django.contrib.admin',
+    'django.contrib.postgres',
+    
 ]
 THIRD_PARTY_APPS = [
     'crispy_forms',
@@ -68,6 +70,11 @@ THIRD_PARTY_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'rest_framework',
+    
+    'sks.graphql',
+    
+    'graphene_django',
+    'django_filters'
 ]
 LOCAL_APPS = [
     'sks.users.apps.UsersConfig',
@@ -83,10 +90,13 @@ MIGRATION_MODULES = {
     'sites': 'sks.contrib.sites.migrations'
 }
 
+GRAPHENE = {'MIDDLEWARE': ['graphene_django.debug.DjangoDebugMiddleware']}
+
 # AUTHENTICATION
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#authentication-backends
 AUTHENTICATION_BACKENDS = [
+    'graphql_jwt.backends.JSONWebTokenBackend',
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
@@ -133,6 +143,9 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    
+    'graphql_jwt.middleware.JSONWebTokenMiddleware',
+    
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]

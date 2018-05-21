@@ -4,6 +4,9 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.views.generic import TemplateView
 from django.views import defaults as default_views
+from graphene_django.views import GraphQLView
+
+from sks.graphql.api import schema
 
 urlpatterns = [
     path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
@@ -20,6 +23,10 @@ urlpatterns = [
         include("sks.users.urls", namespace="users"),
     ),
     path("accounts/", include("allauth.urls")),
+    
+    path('api/graphql', GraphQLView.as_view(
+        schema=schema, graphiql=settings.DEBUG), name='api'),
+    
     # Your stuff: custom urls includes go here
 ] + static(
     settings.MEDIA_URL, document_root=settings.MEDIA_ROOT
