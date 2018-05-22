@@ -13,10 +13,12 @@ from graphene_django.registry import get_global_registry
 from graphql_jwt import ObtainJSONWebToken
 from graphql_jwt.exceptions import GraphQLJWTError
 from graphql_jwt.decorators import staff_member_required
+from graphene_django.rest_framework.mutation import SerializerMutation as Serializer
 
 from ..utils import get_node
 from .decorators import permission_required
 from .types import Error
+from graphene_django.rest_framework.types import ErrorType
 
 registry = get_global_registry()
 
@@ -216,3 +218,44 @@ class CreateToken(ObtainJSONWebToken):
             return CreateToken(errors=[Error(message=str(e))])
         else:
             return result
+
+class SerializerMutation(Serializer):
+    response_fields = None
+    
+    class Meta:
+        abstract = True
+    
+    @classmethod
+    def __init_subclass_with_meta__(cls, **kwargs):
+        
+        if not cls.response_fields:
+            raise Exception('response_fields is required for the SerializerMutation')
+#         
+        Serializer.__init_subclass_with_meta__(**kwargs)
+    
+    @classmethod
+    def mutate_and_get_payload(cls, root, info, **input):
+        serializer = cls._meta.serializer_class(
+            data=input, 
+            context=dict(request=info.context)
+        )
+        
+        if serializer.is_valid():
+            return cls.perform_mutate(serializer, info)
+        else:
+            errors = [
+                ErrorType(field=key, messages=value)
+                for key, value in serializer.errors.items()
+            ]
+            
+            return cls(errors=errors)
+    
+    @classmethod
+    def perform_mutate(cls, serializer, info):
+        obj = serializer.save()
+        
+        ctx = {}
+        for field in cls.response_fields:
+            ctx.update(field=getattr(obj, field))
+        
+        return cls(errors=None, **ctx)

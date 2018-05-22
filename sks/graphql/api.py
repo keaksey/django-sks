@@ -12,11 +12,11 @@ from .core.mutations import CreateToken
 from .core.filters import DistinctFilterSet
 
 from .utils import get_node
-
 from ..users import models as user_models
 
 from .users.types import User
 from .users.resolvers import resolve_users
+from .users.mutations import UserRegister
 
 class Query(graphene.ObjectType):
     
@@ -46,5 +46,10 @@ class Query(graphene.ObjectType):
 class Mutations(graphene.ObjectType):
     token_create = CreateToken.Field()
     token_refresh = graphql_jwt.Refresh.Field()
-
+    
+    user_register = UserRegister.Field()
+    
+    
 schema = graphene.Schema(Query, Mutations)
+
+
