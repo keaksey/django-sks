@@ -71,14 +71,16 @@ THIRD_PARTY_APPS = [
     'allauth.socialaccount',
     'rest_framework',
     
-    'sks.graphql',
-    
     'graphene_django',
     'django_filters'
 ]
 LOCAL_APPS = [
     'sks.users.apps.UsersConfig',
     # Your stuff: custom apps go here
+    
+    'sks.graphql',
+    'sks.shop',
+    'sks.product'
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
