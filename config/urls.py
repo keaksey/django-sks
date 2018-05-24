@@ -7,6 +7,7 @@ from django.views import defaults as default_views
 from graphene_django.views import GraphQLView
 
 from sks.graphql.api import schema
+from django.views.decorators.csrf import csrf_exempt
 
 urlpatterns = [
     path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
@@ -24,8 +25,8 @@ urlpatterns = [
     ),
     path("accounts/", include("allauth.urls")),
     
-    path('api/graphql', GraphQLView.as_view(
-        schema=schema, graphiql=settings.DEBUG), name='api'),
+    path('api/graphql', csrf_exempt(GraphQLView.as_view(
+        schema=schema, graphiql=settings.DEBUG)), name='api'),
     
     # Your stuff: custom urls includes go here
 ] + static(
