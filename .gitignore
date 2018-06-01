@@ -283,3 +283,4 @@ pip-selfcheck.json
 
 sks/media/
 /.project
+/.pydevproject

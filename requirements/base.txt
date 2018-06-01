@@ -23,3 +23,6 @@ graphene>=2.0
 graphene-django>=2.0
 
 django-mptt>=0.7.1
+django-filter==1.1.0
+django-cors-headers==2.2.0
+django-graphql-jwt==0.1.10
