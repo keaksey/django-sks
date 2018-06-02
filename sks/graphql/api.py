@@ -18,6 +18,8 @@ from .users.types import User
 from .users.resolvers import resolve_users
 from .users.mutations import UserRegister
 
+from .shops.mutations import ShopCreate
+
 class Query(graphene.ObjectType):
     
     user = graphene.Field(
@@ -48,7 +50,7 @@ class Mutations(graphene.ObjectType):
     token_refresh = graphql_jwt.Refresh.Field()
     
     user_register = UserRegister.Field()
-    
+    shop_create   = ShopCreate.Field()
     
 schema = graphene.Schema(Query, Mutations)
 

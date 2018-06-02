@@ -34,6 +34,15 @@ USE_L10N = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#use-tz
 USE_TZ = True
 
+LOCALE_PATHS = ['locale']
+
+ugettext    = lambda s: s
+
+LANGUAGES = [
+    ('km', ugettext(u'Khmer')),
+    ('en', ugettext(u'English')),
+]
+
 # DATABASES
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
@@ -79,9 +88,9 @@ LOCAL_APPS = [
     'sks.users.apps.UsersConfig',
     # Your stuff: custom apps go here
     
-    'sks.graphql',
     'sks.shop',
-    'sks.product'
+    'sks.product',
+    'sks.graphql'
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -149,6 +158,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     
     'graphql_jwt.middleware.JSONWebTokenMiddleware',
     

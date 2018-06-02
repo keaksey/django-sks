@@ -12,8 +12,8 @@ from graphene_django.form_converter import convert_form_field
 from graphene_django.registry import get_global_registry
 from graphql_jwt import ObtainJSONWebToken
 from graphql_jwt.exceptions import GraphQLJWTError
-from graphql_jwt.decorators import staff_member_required
-from graphene_django.rest_framework.mutation import SerializerMutation as Serializer
+from graphql_jwt.decorators import staff_member_required, login_required
+from graphene_django.rest_framework.mutation import SerializerMutation as QLSerializer
 
 from ..utils import get_node
 from .decorators import permission_required
@@ -199,7 +199,13 @@ class StaffMemberRequiredMixin(graphene.Mutation):
         mutate = permission_required(cls.permissions)(super().mutate)
         return mutate(root, info, *args, **kwargs)
 
-
+class LoginRequiredMixin(graphene.Mutation):
+    
+    @classmethod
+    @login_required
+    def mutate(cls, root, info, *args, **kwargs):
+        return super().mutate(root, info, *args, **kwargs)
+    
 class CreateToken(ObtainJSONWebToken):
     """Mutation that authenticates a user and returns token.
 
@@ -219,19 +225,18 @@ class CreateToken(ObtainJSONWebToken):
         else:
             return result
 
-class SerializerMutation(Serializer):
-    response_fields = None
+class SerializerMutation(QLSerializer):
+    
+    @classmethod
+    def get_resp_fields(cls):
+        
+        if not getattr(cls, 'response_fields'):
+            raise 'response_fields is required for the SerializerMutation'
+        
+        return cls.response_fields
     
     class Meta:
         abstract = True
-    
-    @classmethod
-    def __init_subclass_with_meta__(cls, **kwargs):
-        
-        if not cls.response_fields:
-            raise Exception('response_fields is required for the SerializerMutation')
-#         
-        Serializer.__init_subclass_with_meta__(**kwargs)
     
     @classmethod
     def mutate_and_get_payload(cls, root, info, **input):
@@ -252,10 +257,12 @@ class SerializerMutation(Serializer):
     
     @classmethod
     def perform_mutate(cls, serializer, info):
+        response_fields = cls.get_resp_fields()
+        
         obj = serializer.save()
         
         ctx = {}
-        for field in cls.response_fields:
+        for field in response_fields:
             ctx.update(field=getattr(obj, field))
         
         return cls(errors=None, **ctx)
