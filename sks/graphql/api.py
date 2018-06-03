@@ -4,6 +4,7 @@ Created on May 21, 2018
 @author: keakseysum
 '''
 import graphene
+import logging
 import graphql_jwt
 from graphene_django.filter import DjangoFilterConnectionField
 
@@ -11,16 +12,20 @@ from graphene_django.debug import DjangoDebug
 from .core.mutations import CreateToken
 from .core.filters import DistinctFilterSet
 
-from .utils import get_node
-from ..users import models as user_models
-
 from .users.types import User
-from .users.resolvers import resolve_users
+from .users.resolvers import resolve_users, resolve_user_current, resolve_user
 from .users.mutations import UserRegister
 
 from .shops.mutations import ShopCreate
 
+logger = logging.getLogger(__name__)
+
 class Query(graphene.ObjectType):
+    
+    user_current = graphene.Field(
+        User,
+        description='get current user login'
+    )
     
     user = graphene.Field(
         User, id=graphene.Argument(graphene.ID),
@@ -35,16 +40,15 @@ class Query(graphene.ObjectType):
     node = graphene.Node.Field()
     debug = graphene.Field(DjangoDebug, name='__debug')
     
-    def resolve_user(self, info, id=None):
-        if id is not None:
-            return user_models.User.objects.get(id=id)
-        
-        return get_node(info, id, only_type=User)
+    def resolve_user(self, info, kwargs):
+        return resolve_user(info, **kwargs)
+    
+    def resolve_user_current(self, info, **kwargs):
+        return resolve_user_current(user=info.context.user, **kwargs)
     
     def resolve_users(self, info, **kwargs):
         return resolve_users(user=info.context.user, **kwargs)
     
-
 class Mutations(graphene.ObjectType):
     token_create = CreateToken.Field()
     token_refresh = graphql_jwt.Refresh.Field()

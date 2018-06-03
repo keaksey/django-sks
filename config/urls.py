@@ -5,7 +5,6 @@ from django.contrib import admin
 from django.views.generic import TemplateView
 from django.views import defaults as default_views
 from graphene_django.views import GraphQLView
-from django.views.i18n import JavaScriptCatalog
 
 from sks.graphql.api import schema
 from django.views.decorators.csrf import csrf_exempt
@@ -28,8 +27,6 @@ urlpatterns = [
     
     path('api/graphql', csrf_exempt(GraphQLView.as_view(
         schema=schema, graphiql=settings.DEBUG)), name='api'),
-    
-    path('jsi18n/', JavaScriptCatalog.as_view(), name='javascript-catalog'),
     
     # Your stuff: custom urls includes go here
 ] + static(

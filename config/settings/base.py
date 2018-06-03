@@ -158,9 +158,8 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.middleware.locale.LocaleMiddleware',
-    
     'graphql_jwt.middleware.JSONWebTokenMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
