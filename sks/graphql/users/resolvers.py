@@ -21,7 +21,7 @@ def resolve_user(info, **kwargs):
     
     return get_node(info, pk, only_type=User)
 
-def resolve_user_current(user, **kwargs):
+def resolve_current_user(user, **kwargs):
     if user.is_anonymous:
         return User(user)
     
