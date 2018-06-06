@@ -285,3 +285,4 @@ sks/media/
 /.project
 /.pydevproject
 /.env
+.env
