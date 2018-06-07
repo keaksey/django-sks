@@ -263,6 +263,6 @@ class SerializerMutation(QLSerializer):
         
         ctx = {}
         for field in response_fields:
-            ctx.update(field=getattr(obj, field))
+            ctx.update(dict(field=getattr(obj, field)))
         
         return cls(errors=None, **ctx)
