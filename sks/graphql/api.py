@@ -14,8 +14,10 @@ from .core.filters import DistinctFilterSet
 
 from .users.types import User
 from .users.resolvers import resolve_users, resolve_current_user, resolve_user
-from .users.mutations import UserRegister
+from .shops.types import Shop
+from .shops.resolvers import resolve_shop
 
+from .users.mutations import UserRegister
 from .shops.mutations import ShopCreate
 
 logger = logging.getLogger(__name__)
@@ -31,6 +33,10 @@ class Query(graphene.ObjectType):
         User, id=graphene.Argument(graphene.ID),
         description='Lookup a page by ID or by slug.')
     
+    shop = graphene.Field(
+        Shop, domain=graphene.Argument(graphene.String),
+        description='Lookup a shop by handle or by slug.')
+    
     users = DjangoFilterConnectionField(
         User, filterset_class=DistinctFilterSet,
         level=graphene.Argument(graphene.Int),
@@ -39,6 +45,9 @@ class Query(graphene.ObjectType):
     
     node = graphene.Node.Field()
     debug = graphene.Field(DjangoDebug, name='__debug')
+    
+    def resolve_shop(self, info, **kwargs):
+        return resolve_shop(info, **kwargs)
     
     def resolve_user(self, info, kwargs):
         return resolve_user(info, **kwargs)
