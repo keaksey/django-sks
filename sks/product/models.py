@@ -15,8 +15,22 @@ MAX_LENGTH_HADLE_FIELD = 256
 
 PUBLICATION_CHOICES = (
     ('pos', _('Online shop')),
+    
 )
 
+class Option(models.Model):
+    name = models.CharField(max_length=255)
+    
+    position = models.IntegerField(null=True, default=1)
+    
+    product = models.ForeignKey(
+        'product.Product',
+        models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name='products'
+    )
+    
 class Category(SeoModel):
     name   = models.CharField(max_length=MAX_LENGTH_HADLE_FIELD)
     handle = models.SlugField(max_length=MAX_LENGTH_HADLE_FIELD)
@@ -106,13 +120,6 @@ class Product(SeoModel):
         auto_now_add=True
     )
     
-    published_scope = models.CharField(
-        _('visability'), 
-        choices=PUBLICATION_CHOICES,
-        default="pos",
-        max_length=30
-    )
-    
     attributes = HStoreField(default={}, blank=True)
     
     class Meta:
@@ -125,23 +132,11 @@ class Product(SeoModel):
             
         unique_together = ('shop', 'handle', )
         
-    def __iter__(self):
-        if not hasattr(self, '__variants'):
-            setattr(self, '__variants', self.variants.all())
-        return iter(getattr(self, '__variants'))
-    
-    def __repr__(self):
-        class_ = type(self)
-        return '<%s.%s(pk=%r, name=%r)>' % (
-            class_.__module__, class_.__name__, self.pk, self.name)
-    
     def __str__(self):
         return self.name
     
     def get_absolute_url(self):
-        return reverse(
-            'product:details',
-            kwargs={'slug': self.get_slug(), 'product_id': self.id})
+        return "/%s" % self.handle
         
 class ProductVariant(SortableModel):
     
@@ -181,9 +176,10 @@ class ProductVariant(SortableModel):
         decimal_places=2
     )
     
-    sale_price = models.DecimalField(
+    compare_at_price = models.DecimalField(
         max_digits=10,
-        decimal_places=2
+        decimal_places=2,
+        default="0.00"
     )
     
     sku = models.CharField(blank=True, default='', max_length=MAX_LENGTH_HADLE_FIELD)

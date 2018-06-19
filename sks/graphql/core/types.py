@@ -6,7 +6,6 @@ Created on May 21, 2018
 import graphene
 from graphene_django import DjangoObjectType
 
-
 class CountableConnection(graphene.relay.Connection):
     class Meta:
         abstract = True
