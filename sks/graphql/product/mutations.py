@@ -3,34 +3,19 @@ Created on Jun 19, 2018
 
 @author: keakseysum
 '''
-import graphene
-from graphene.types import InputObjectType
+from .serializers import ProductSerializer
 
 from ..core.mutations import (
-    SerializerMutation,
+    ShopSerializerMutation,
     StaffMemberRequiredMixin
 )
+from .types import Product as ProductType
 
-class ProductTypeCreateMutation(StaffMemberRequiredMixin, SerializerMutation):
-    permissions = 'product.edit_properties'
-    
-    class Meta:
-        description = 'Creates a new product type.'
-        
-class CategoryCreateMutation(StaffMemberRequiredMixin, SerializerMutation):
-    permissions = 'category.edit_category'
-    
-    class Meta:
-        description = 'Creates a new category.'
-        #form_class = CategoryForm
-
-class ProductCreateMutation(StaffMemberRequiredMixin, SerializerMutation):
+class ProductCreateMutation(StaffMemberRequiredMixin, ShopSerializerMutation):
     permissions = 'product.edit_product'
+    response_fields = ['handle']
+    p1 = ProductType
     
     class Meta:
         description = 'Creates a new product.'
-        #form_class = ProductForm
-        # Exclude from input form fields
-        # that are being overwritten by arguments
-        exclude = ['product_type', 'category', 'attributes']
-        
+        serializer_class = ProductSerializer

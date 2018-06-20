@@ -20,7 +20,8 @@ djangorestframework==3.8.2  # https://github.com/encode/django-rest-framework
 coreapi==2.3.3  # https://github.com/core-api/python-client
 
 graphene>=2.1.2
-graphene-django>=2.0
+graphene-django==2.1rc1
+graphql-core>=2.1rc1
 
 django-mptt>=0.7.1
 django-filter==1.1.0

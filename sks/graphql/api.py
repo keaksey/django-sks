@@ -19,6 +19,7 @@ from .shops.resolvers import resolve_shop
 
 from .users.mutations import UserRegister
 from .shops.mutations import ShopCreate
+from .product.mutations import ProductCreateMutation
 
 logger = logging.getLogger(__name__)
 
@@ -62,8 +63,10 @@ class Mutations(graphene.ObjectType):
     token_create = CreateToken.Field()
     token_refresh = graphql_jwt.Refresh.Field()
     
-    user_register = UserRegister.Field()
-    shop_create   = ShopCreate.Field()
+    user_register  = UserRegister.Field()
+    shop_create    = ShopCreate.Field()
+    
+    product_create = ProductCreateMutation.Field()
     
 schema = graphene.Schema(Query, Mutations)
 

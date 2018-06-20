@@ -83,13 +83,31 @@ class ProductType(models.Model):
             class_.__module__, class_.__name__, self.pk, self.name)
 
 class Product(SeoModel):
+    
+    title  = models.CharField(
+        _('title'), 
+        max_length=MAX_LENGTH_HADLE_FIELD,
+        db_index=True,
+        default="no-title"
+    )
+    
+    handle = models.CharField(
+        _('handle'), 
+        max_length=MAX_LENGTH_HADLE_FIELD
+    )
+    
     product_type = models.ForeignKey(
         ProductType, related_name='products', on_delete=models.CASCADE)
     
     shop = models.ForeignKey(Shop, related_name='products', on_delete=models.CASCADE)
     
     category = models.ForeignKey(
-        Category, related_name='products', on_delete=models.CASCADE)
+        Category, 
+        models.SET_NULL,
+        related_name='products',
+        blank=True,
+        null=True
+    )
     
     user = models.ForeignKey(
         User,
@@ -100,11 +118,6 @@ class Product(SeoModel):
     )
     
     body_html = models.TextField(_('description'), blank=True)
-    
-    handle = models.CharField(
-        _('handle'), 
-        max_length=MAX_LENGTH_HADLE_FIELD
-    )
     
     published_at = models.DateTimeField(null=True)
     
@@ -133,7 +146,7 @@ class Product(SeoModel):
         unique_together = ('shop', 'handle', )
         
     def __str__(self):
-        return self.name
+        return self.title
     
     def get_absolute_url(self):
         return "/%s" % self.handle
