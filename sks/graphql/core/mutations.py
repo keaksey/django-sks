@@ -13,7 +13,6 @@ from graphql_jwt import ObtainJSONWebToken
 from graphql_jwt.exceptions import GraphQLJWTError
 from graphql_jwt.decorators import login_required
 from graphene_django.rest_framework.mutation import SerializerMutation as QLSerializer
-from graphene.types import InputObjectType
 
 from ..utils import get_node
 from .decorators import permission_required

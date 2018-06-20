@@ -23,7 +23,7 @@ class User(CountableDjangoObjectType):
         user = info.context.user
         
         if not user.is_authenticated:
-            return models.Shop()
+            return models.Shop.objects.filter(staff=self).first()
         
         shop_staffs = models.ShopStaff.objects.filter(
             user=user, 
@@ -46,3 +46,4 @@ class User(CountableDjangoObjectType):
         interfaces = [relay.Node]
         filter_fields = ['id', 'username']
         model = User
+        exclude_fields = ['shop_set']

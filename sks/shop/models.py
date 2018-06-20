@@ -76,7 +76,6 @@ class ShopStaff(models.Model):
 class Shop(SeoModel):
     
     ''' cached_property current user request '''
-    _is_owner = False
     
     site = models.OneToOneField(
         Site, related_name='settings', on_delete=models.CASCADE)
@@ -101,14 +100,17 @@ class Shop(SeoModel):
     
     @cached_property
     def owner(self):
-        return self.staff.all().filter(is_owner=True).get()
+        return self.shop_staff.filter(is_owner=True).first()
     
     def add_staff(self, user, is_owner=False):
         return ShopStaff.objects.create_user(user, self, is_owner)
     
     @property
     def is_owner(self):
-        return self._is_owner
+        if hasattr(self, '_is_owner'):
+            return self._is_owner
+        
+        return self.owner
     
     class Meta:
         app_label = "shop"

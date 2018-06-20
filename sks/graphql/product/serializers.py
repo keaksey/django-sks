@@ -7,7 +7,7 @@ from rest_framework import serializers
 from slugify import slugify
 from rest_framework.fields import empty
 
-from ...product.models import Product, ProductType, Category
+from ...product.models import Product, ProductType, Category, ProductVariant
 from ..core.serializers import ShopSerializersMixin
 from ..core.serializer_fields import AutoHandleField
 
@@ -59,7 +59,15 @@ class ProductValidateSerializerMixin(
             category = categories[0]
             
         return category
+
+class VariantSerializer(serializers.ModelSerializer):
     
+    options1 = serializers.CharField()
+    
+    class Meta:
+        model = ProductVariant
+        fields = ['options1' ]
+
 class ProductSerializer(ProductValidateSerializerMixin):
     
     def run_validation(self, attrs):
@@ -92,7 +100,6 @@ class ProductSerializer(ProductValidateSerializerMixin):
         product = None
         
         try:
-#             validated_data['shop'] = self.shop
             product = super(ProductSerializer, self).create(validated_data)
         except Exception as err:
             print('err ', err)
@@ -101,5 +108,7 @@ class ProductSerializer(ProductValidateSerializerMixin):
     
     class Meta:
         model  = Product
-        fields = ('handle', 'product_type', 'category', 'shop')
-        
+        fields = ('handle', 'variants', 'product_type', 'category', 'shop')
+    
+    variants = VariantSerializer(many=True,  read_only=True)
+    
