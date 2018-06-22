@@ -28,7 +28,7 @@ class Option(models.Model):
         models.SET_NULL,
         blank=True,
         null=True,
-        related_name='products'
+        related_name='options'
     )
     
 class Category(SeoModel):

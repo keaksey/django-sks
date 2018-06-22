@@ -11,7 +11,7 @@ from graphene_django.filter import DjangoFilterConnectionField
 from graphene_django.debug import DjangoDebug
 from .core.mutations import CreateToken
 from .core.filters import DistinctFilterSet
-# from .core.fields import DjangoObjectField
+from .core.fields import DjangoObjectField
 
 from .users.types import User
 from .users.resolvers import resolve_users, resolve_current_user, resolve_user
@@ -21,6 +21,7 @@ from .shops.types import Shop
 from .users.mutations import UserRegister
 from .shops.mutations import ShopCreate
 from .product.mutations import ProductCreate
+from .product.types import Product
 
 logger = logging.getLogger(__name__)
 
@@ -35,14 +36,20 @@ class Query(graphene.ObjectType):
         User, id=graphene.Argument(graphene.ID),
         description='Lookup a page by ID or by slug.')
     
-#     shop = DjangoObjectField(
-#         Shop, domain=graphene.Argument(graphene.String),
-#         description='Lookup a shop by handle or by slug.')
+    shop = DjangoObjectField(
+        Shop, domain=graphene.Argument(graphene.String),
+        description='Lookup a shop by handle or by slug.')
     
     users = DjangoFilterConnectionField(
         User, filterset_class=DistinctFilterSet,
         level=graphene.Argument(graphene.Int),
         description='List of the shop\'s pages.'
+    )
+    
+    products = DjangoFilterConnectionField(
+        Product, filterset_class=DistinctFilterSet,
+        level=graphene.Argument(graphene.Int),
+        description='List of the product\'s shop.'
     )
     
     node = graphene.Node.Field()
