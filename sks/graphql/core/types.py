@@ -4,9 +4,13 @@ Created on May 21, 2018
 @author: keakseysum
 '''
 import graphene
-from graphene_django import DjangoObjectType
+from graphene import relay
 
-class CountableConnection(graphene.relay.Connection):
+from graphene_django import DjangoObjectType
+from graphene_django.rest_framework.types import ErrorType
+from graphene.types import Scalar
+
+class CountableConnection(relay.Connection):
     class Meta:
         abstract = True
 
@@ -16,7 +20,6 @@ class CountableConnection(graphene.relay.Connection):
     @staticmethod
     def resolve_total_count(root, info, *args, **kwargs):
         return root.length
-
 
 class CountableDjangoObjectType(DjangoObjectType):
     class Meta:
@@ -31,13 +34,20 @@ class CountableDjangoObjectType(DjangoObjectType):
         super().__init_subclass_with_meta__(
             *args, connection=countable_conn, **kwargs)
 
+class MessagesScalar(Scalar):
+    
+    @staticmethod
+    def parse_literal(node):
+        return node.value
+    
+    @staticmethod
+    def parse_value(value):
+        return value
+    
+    @staticmethod
+    def serialize(value):
+        print('value ', value)
+        return value
 
-class Error(graphene.ObjectType):
-    field = graphene.String(
-        description="""Name of a field that caused the error. A value of
-        `null` indicates that the error isn't associated with a particular
-        field.""", required=False)
-    message = graphene.String(description='The error message.')
-
-    class Meta:
-        description = 'Represents an error in the input of a mutation.'
+class Error(ErrorType):
+    messages = MessagesScalar(required=True)

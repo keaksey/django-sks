@@ -6,6 +6,33 @@ Created on Jun 20, 2018
 import itertools
 from rest_framework import serializers
 from slugify import slugify
+from rest_framework.fields import empty
+
+class Field(object):
+    
+    def __init__(self, *args, **kwargs):
+        self._cach_required = kwargs.get('required')
+        kwargs['required']  = False
+        super(Field, self).__init__(*args, **kwargs)
+    
+    def run_cach_required(self):
+        if self._cach_required:
+            self.required = True
+        
+    def run_validation(self, data=empty):
+        
+        self.run_cach_required()
+        
+        return super(Field, self).run_validation(data)
+    
+class DecimalField(Field, serializers.DecimalField):
+    pass
+
+class CharField(Field, serializers.CharField):
+    pass
+
+class IntegerField(Field, serializers.IntegerField):
+    pass
 
 class AutoHandleField(serializers.SlugField):
     

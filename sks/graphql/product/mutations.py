@@ -3,25 +3,30 @@ Created on Jun 19, 2018
 
 @author: keakseysum
 '''
-from .serializers import ProductSerializer, VariantSerializer
+from . import serializers
 from graphene import relay
+import graphene
 
+from . import types
 from ..core.mutations import (
     ShopSerializerMutation,
-    SerializerMutation,
     StaffMemberRequiredMixin
 )
-# 
-# class VariantMutation(SerializerMutation):
-#     
-#     class Meta:
-#         description = 'Creates a new variants.'
-#         serializer_class = VariantSerializer
 
-class ProductCreateMutation(StaffMemberRequiredMixin, ShopSerializerMutation):
+class ProductCreate(StaffMemberRequiredMixin, ShopSerializerMutation):
     permissions = 'product.edit_product'
+    
+    variants = graphene.List(
+        types.ProductVariant,
+        description='List of variants assigned to this product.'
+    )
+    
+    options = graphene.List(
+        types.ProductOption,
+        description='List of options assigned to this product.'
+    )
     
     class Meta:
         description = 'Creates a new product.'
-        serializer_class = ProductSerializer
+        serializer_class = serializers.Product
         interfaces = [relay.Node]

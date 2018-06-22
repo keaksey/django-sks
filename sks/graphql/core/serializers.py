@@ -22,3 +22,4 @@ class ShopSerializersMixin(SerializersMixin):
         
         if self.user:
             self.shop = self.request.shop
+    

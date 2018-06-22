@@ -3,7 +3,6 @@ Created on May 21, 2018
 
 @author: keakseysum
 '''
-from collections import OrderedDict
 
 import graphene
 from django.core.exceptions import ImproperlyConfigured
@@ -17,7 +16,6 @@ from graphene_django.rest_framework.mutation import SerializerMutation as QLSeri
 from ..utils import get_node
 from .decorators import permission_required
 from .types import Error
-# from graphene_django.rest_framework.types import ErrorType
 
 registry = get_global_registry()
 
@@ -141,8 +139,13 @@ class CreateToken(ObtainJSONWebToken):
             return CreateToken(errors=[Error(message=str(e))])
         else:
             return result
-
+    
 class SerializerMutation(QLSerializer):
+    
+    errors = graphene.List(
+        Error,
+        description='May contain more than one error for same field.'
+    )
     
     class Meta:
         abstract = True

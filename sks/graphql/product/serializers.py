@@ -7,9 +7,11 @@ from rest_framework import serializers
 from slugify import slugify
 from rest_framework.fields import empty
 
-from ...product.models import Product, ProductType, Category, ProductVariant
+from ...product import models
 from ..core.serializers import ShopSerializersMixin
-from ..core.serializer_fields import AutoHandleField
+from ..core import SerializerField
+
+STRING_MAX_LENGTH = 256
 
 class ProductValidateSerializerMixin(
     ShopSerializersMixin, 
@@ -19,7 +21,7 @@ class ProductValidateSerializerMixin(
     def validate_product_type(self, value):
         handle = slugify(value).lower()
         
-        product_types  = ProductType.objects.filter(
+        product_types  = models.ProductType.objects.filter(
             handle__iexact=handle,
             shop=self.shop
         )
@@ -27,7 +29,7 @@ class ProductValidateSerializerMixin(
         product_type = None
         
         if False == product_types.exists():
-            product_type = ProductType.objects.create(
+            product_type = models.ProductType.objects.create(
                 name=value, 
                 handle=handle,
                 shop=self.shop
@@ -43,14 +45,14 @@ class ProductValidateSerializerMixin(
         
         handle = slugify(value)
         
-        categories = Category.objects.filter(
+        categories = models.Category.objects.filter(
             handle__iexact=handle,
             shop=self.shop
         )
         
         category  = None
         if categories.exists() is False:
-            category  = Category.objects.create(
+            category  = models.Category.objects.create(
                 name=value,
                 handle=handle,
                 shop=self.shop
@@ -60,15 +62,12 @@ class ProductValidateSerializerMixin(
             
         return category
 
-class VariantSerializer(serializers.ModelSerializer):
+class ProductOption(serializers.ModelSerializer):
+    position = serializers.IntegerField(required=False)
     
-    options1 = serializers.CharField()
+    id = serializers.IntegerField(required=False)
     
-    class Meta:
-        model = ProductVariant
-        fields = ['options1' ]
-
-class ProductSerializer(ProductValidateSerializerMixin):
+    values = serializers.SerializerMethodField('get_option_values')
     
     def run_validation(self, attrs):
         
@@ -77,38 +76,165 @@ class ProductSerializer(ProductValidateSerializerMixin):
         
         attrs = attrs.copy()
         
-        attrs['shop'] = self.shop.id
-        
+        if not attrs.get('position'):
+            attrs['position'] = 1
+            
         return super().run_validation(attrs)
     
-    product_type = serializers.CharField()
+    def get_option_values(self, option):
+        product = option.product
+        position = option.position
+        
+        if position > 3:
+            position = 3
+        
+        option   = "option%s" % position
+        
+        # improve perform 
+        if hasattr(product, '_prefetched_objects_cache'):
+            cache_variants = product._prefetched_objects_cache.get('variants')
+            
+            if not cache_variants:
+                return product.variants.values_list(option, flat=True)
+            
+            variants = []
+            for cache_variant in cache_variants:
+                if getattr(cache_variant, option):
+                    variants.append(getattr(cache_variant, option))
+                    
+            return variants
+        
+        return product.variants.values_list(option, flat=True)
     
-    category = serializers.CharField(
+    class Meta:
+        model  = models.Option
+        fields = ('id', 'name', 'position', 'values', 'product')
+        read_only_fields = ('product', 'values')
+
+class ProductVariant(serializers.ModelSerializer):
+    
+    id = SerializerField.IntegerField(
+        required=False,
+        allow_null=True
+    )
+    
+    price = SerializerField.DecimalField(
+        required=False,
+        max_digits=10,
+        decimal_places=2,
+        default=0
+    )
+    
+    compare_at_price = SerializerField.DecimalField(
+        required=False,
+        max_digits=10,
+        decimal_places=2,
+        default=0
+    )
+    
+    position = serializers.IntegerField(required=False)
+    
+#     barcode = serializers.CharField(
+#         required=False,
+#         allow_blank=True,
+#         allow_null=True
+#     )
+    
+    option1  = SerializerField.CharField(
+        required=False,
+        default='Default Title'
+    )
+    
+    option2  = SerializerField.CharField(
+        required=False,
+        allow_blank=True,
+        default=''
+    )
+    
+    option3  = SerializerField.CharField(
+        required=False,
+        allow_blank=True,
+        default=''
+    )
+    
+    title = SerializerField.CharField(
+        source='get_title',
+        read_only=True
+    )
+    
+    def run_validation(self, attrs):
+        
+        if attrs == empty:
+            return super().run_validation(attrs)
+        
+        attrs = attrs.copy()
+        
+        if not attrs.get('compare_at_price'):
+            attrs['compare_at_price'] = attrs.get('price')
+            
+        return super(ProductVariant, self).run_validation(attrs)
+    
+    class Meta:
+        model = models.ProductVariant
+        fields = ['id', 'option1', 'option2', 'option3', 'price', 'compare_at_price', 
+            'sku', 'position', 'title'
+        ]
+
+class Product(ProductValidateSerializerMixin):
+    
+    id = serializers.IntegerField(
+        required=False,
+        read_only=True
+    )
+    
+    title = SerializerField.CharField(
+        max_length=STRING_MAX_LENGTH,
+        required=True
+    )
+    
+    product_type = SerializerField.CharField(required=True)
+    
+    category = SerializerField.CharField(
         required=False,
         allow_blank=True,
         allow_null=True
     )
     
-    handle = AutoHandleField(
+    handle = SerializerField.AutoHandleField(
         max_length=256,
         required=False,
-        model_auto_handle=Product,
+        model_auto_handle=models.Product,
         uniqe_by="shop"
     )
     
+    variants = ProductVariant(many=True, required=False)
+    
+    options = ProductOption(many=True, required=False)
+    
+    def run_validation(self, attrs):
+        if attrs == empty:
+            return super().run_validation(attrs)
+        
+        attrs = attrs.copy()
+        attrs['shop'] = self.shop.id
+        
+        return super().run_validation(attrs)
+    
     def create(self, validated_data):
         product = None
+        print('validated_data ', validated_data)
         
         try:
-            product = super(ProductSerializer, self).create(validated_data)
+            product = super(Product, self).create(validated_data)
         except Exception as err:
             print('err ', err)
             
         return product
     
     class Meta:
-        model  = Product
-        fields = ('handle', 'variants', 'product_type', 'category', 'shop')
+        model  = models.Product
+        fields = ('id', 'handle', 'variants', 'options', 
+            'product_type', 'category', 'shop', 'title'
+        )
     
-    variants = VariantSerializer(many=True,  read_only=True)
     

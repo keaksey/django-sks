@@ -20,7 +20,7 @@ from .shops.types import Shop
 
 from .users.mutations import UserRegister
 from .shops.mutations import ShopCreate
-from .product.mutations import ProductCreateMutation
+from .product.mutations import ProductCreate
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +64,7 @@ class Mutations(graphene.ObjectType):
     user_register  = UserRegister.Field()
     shop_create    = ShopCreate.Field()
     
-    product_create = ProductCreateMutation.Field()
+    product_create = ProductCreate.Field()
     
 schema = graphene.Schema(Query, Mutations)
 
